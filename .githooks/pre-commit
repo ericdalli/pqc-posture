@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Runs before every commit. Bypass with --no-verify when you genuinely need to
+# (mid-refactor WIP commits), but make that a deliberate choice, not a habit.
+set -uo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root" || exit 1
+
+fail=0
+
+if command -v shellcheck >/dev/null 2>&1; then
+  if ! shellcheck scripts/*.sh; then
+    echo "pre-commit: shellcheck failed" >&2
+    fail=1
+  fi
+else
+  echo "pre-commit: shellcheck not installed, skipping" >&2
+fi
+
+# python3 -m pytest, not the pytest script: console scripts land in
+# ~/.local/bin which is not on PATH in a fresh container. A hook that skips
+# itself because a tool "is missing" is worse than no hook -- you trust it and
+# it does nothing.
+if ! python3 -m pytest tests/ -q; then
+  echo "pre-commit: tests failed" >&2
+  fail=1
+fi
+
+if [[ $fail -ne 0 ]]; then
+  echo "pre-commit: commit blocked. Fix the above, or use --no-verify." >&2
+  exit 1
+fi

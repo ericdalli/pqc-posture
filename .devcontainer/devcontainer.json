@@ -16,6 +16,6 @@
       }
     }
   },
-  "postCreateCommand": "pip install --break-system-packages -e '.[dev]' && openssl version && openssl list -tls-groups | head -20",
+  "postCreateCommand": "pip install --break-system-packages -e '.[dev]' && git config core.hooksPath .githooks && bash scripts/check-openssl.sh",
   "remoteUser": "vscode"
 }

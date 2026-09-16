@@ -372,8 +372,14 @@ existing SSH session.
 ```bash
 bash scripts/check-openssl.sh     # run this first
 pip install -e ".[dev]"
+git config core.hooksPath .githooks   # enable the pre-commit hook
 pytest tests/ -q
 ```
+
+`core.hooksPath` is local config and cannot be committed, so a fresh clone
+needs that line. The dev container runs it for you. The hook runs shellcheck
+and the test suite before each commit; bypass deliberately with
+`git commit --no-verify` when you need a work-in-progress commit.
 
 `check-openssl.sh` is the first thing to run on any new machine. A pre-3.5
 OpenSSL is the single most common reason the scanner reports "no PQ support"
