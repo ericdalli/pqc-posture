@@ -36,6 +36,33 @@ class FrontendType(enum.Enum):
     UNKNOWN = "unknown"  # there is one, but we do not know what
 
 
+class DataClassification(enum.Enum):
+    """Who may see what this service handles. Declared, never inferred."""
+    PUBLIC = "public"
+    INTERNAL = "internal"
+    CONFIDENTIAL = "confidential"
+    REGULATED = "regulated"
+    UNKNOWN = "unknown"
+
+
+class SensitivityHorizon(enum.Enum):
+    """How long the data stays sensitive.
+
+    This, not confidentiality level, is the question that matters for
+    harvest-now-decrypt-later. Traffic captured today is decryptable once a
+    cryptographically relevant quantum computer exists, so the exposure is a
+    function of how long the contents remain worth reading. A session token is
+    worthless in a week. A health record or a classified file is still
+    sensitive in 2050, and classical-only key exchange on that endpoint today
+    is a real liability rather than a theoretical one.
+    """
+    EPHEMERAL = "ephemeral"   # weeks
+    SHORT = "short"           # 1-2 years
+    MEDIUM = "medium"         # 5-10 years
+    LONG = "long"             # decades
+    UNKNOWN = "unknown"
+
+
 # Declared frontend type does not gate any probe. It is recorded so that a
 # type whose behaviour contradicts the observation can be flagged — an
 # "aws_nlb" that presents its own certificate, for instance, is either
@@ -101,6 +128,65 @@ def _coerce_tls_mode(value) -> TlsMode:
     return mapping[key]
 
 
+_CLASSIFICATION_ALIASES = {
+    "open": DataClassification.PUBLIC,
+    "unclassified": DataClassification.PUBLIC,
+    "staff": DataClassification.INTERNAL,
+    "private": DataClassification.CONFIDENTIAL,
+    "restricted": DataClassification.CONFIDENTIAL,
+    "sensitive": DataClassification.CONFIDENTIAL,
+    "pci": DataClassification.REGULATED,
+    "phi": DataClassification.REGULATED,
+    "phipa": DataClassification.REGULATED,
+    "pii": DataClassification.REGULATED,
+    "hipaa": DataClassification.REGULATED,
+    "classified": DataClassification.REGULATED,
+    "protected-b": DataClassification.REGULATED,
+    "": DataClassification.UNKNOWN,
+}
+
+_HORIZON_ALIASES = {
+    "session": SensitivityHorizon.EPHEMERAL,
+    "transient": SensitivityHorizon.EPHEMERAL,
+    "days": SensitivityHorizon.EPHEMERAL,
+    "weeks": SensitivityHorizon.EPHEMERAL,
+    "operational": SensitivityHorizon.SHORT,
+    "years": SensitivityHorizon.MEDIUM,
+    "decades": SensitivityHorizon.LONG,
+    "permanent": SensitivityHorizon.LONG,
+    "indefinite": SensitivityHorizon.LONG,
+    "": SensitivityHorizon.UNKNOWN,
+}
+
+
+def _coerce_classification(value) -> DataClassification:
+    if value is None:
+        return DataClassification.UNKNOWN
+    key = str(value).strip().lower().replace(" ", "-").replace("_", "-")
+    if key in _CLASSIFICATION_ALIASES:
+        return _CLASSIFICATION_ALIASES[key]
+    try:
+        return DataClassification(key)
+    except ValueError:
+        raise InventoryError(
+            f"unknown data_classification {value!r}; use one of "
+            f"{', '.join(c.value for c in DataClassification)}")
+
+
+def _coerce_horizon(value) -> SensitivityHorizon:
+    if value is None:
+        return SensitivityHorizon.UNKNOWN
+    key = str(value).strip().lower().replace(" ", "-").replace("_", "-")
+    if key in _HORIZON_ALIASES:
+        return _HORIZON_ALIASES[key]
+    try:
+        return SensitivityHorizon(key)
+    except ValueError:
+        raise InventoryError(
+            f"unknown sensitivity_horizon {value!r}; use one of "
+            f"{', '.join(h.value for h in SensitivityHorizon)}")
+
+
 @dataclass
 class Endpoint:
     """One address we can open a socket to."""
@@ -132,7 +218,17 @@ class Service:
     sni: str | None = None
     frontend: Frontend | None = None
     backends: list[Endpoint] = field(default_factory=list)
+    # Declared context. Never inferred, and unknown is a real answer rather
+    # than a gap to be filled with a guess -- the same discipline the evidence
+    # model applies to not_observed.
+    data_classification: DataClassification = DataClassification.UNKNOWN
+    sensitivity_horizon: SensitivityHorizon = SensitivityHorizon.UNKNOWN
     notes: str | None = None
+
+    @property
+    def context_declared(self) -> bool:
+        return (self.data_classification is not DataClassification.UNKNOWN
+                or self.sensitivity_horizon is not SensitivityHorizon.UNKNOWN)
 
     @property
     def has_frontend(self) -> bool:
@@ -227,8 +323,15 @@ def parse_service(raw: dict, defaults: dict | None = None) -> Service:
         raise InventoryError(
             f"service {name!r} declares neither a frontend nor any backends")
 
-    return Service(name=name, sni=sni, frontend=frontend, backends=backends,
-                   notes=raw.get("notes"))
+    return Service(
+        name=name, sni=sni, frontend=frontend, backends=backends,
+        data_classification=_coerce_classification(
+            raw.get("data_classification",
+                    defaults.get("data_classification"))),
+        sensitivity_horizon=_coerce_horizon(
+            raw.get("sensitivity_horizon",
+                    defaults.get("sensitivity_horizon"))),
+        notes=raw.get("notes"))
 
 
 def load_inventory(raw: dict | list) -> list[Service]:

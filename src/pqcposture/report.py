@@ -166,6 +166,17 @@ def render_endpoint_evidence(ev, indent: str = "  ") -> list[str]:
 def render_service(result) -> str:
     lines = [f"SERVICE  {result.service}   (sni: {result.sni or 'none'})",
              "=" * (9 + len(result.service))]
+    classification = getattr(result, "data_classification", "unknown")
+    horizon = getattr(result, "sensitivity_horizon", "unknown")
+    if classification != "unknown" or horizon != "unknown":
+        lines.append(f"  declared context : data={classification}, "
+                     f"sensitive-for={horizon}")
+    else:
+        # Undeclared context is stated, not hidden. Severity for findings like
+        # LEGACY_TLS and NO_PQ_KEX depends on it, and an inventory that is
+        # silently all-unknown should look incomplete rather than reassuring.
+        lines.append("  declared context : none (data_classification and "
+                     "sensitivity_horizon not set)")
     if result.frontend:
         lines += render_endpoint_evidence(result.frontend)
     for backend in result.backends:

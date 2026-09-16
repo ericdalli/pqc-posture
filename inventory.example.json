@@ -11,7 +11,9 @@
     {
       "service": "def.company.com",
       "vip": { "ip": "10.1.1.3", "port": 443, "tls_mode": "passthrough" },
-      "backends": ["30.1.1.2", "30.1.1.3"]
+      "backends": ["30.1.1.2", "30.1.1.3"],
+      "data_classification": "internal",
+      "sensitivity_horizon": "short"
     },
 
     {
@@ -30,12 +32,16 @@
         { "ip": "30.1.2.12", "port": 8443, "label": "web02" },
         { "ip": "30.1.2.13", "port": 8443, "label": "web03", "sni": "abc.internal.local" }
       ],
+      "data_classification": "regulated",
+      "sensitivity_horizon": "long",
       "notes": "internal SNI differs on web03 after the vhost split"
     },
 
     {
       "service": "origin-direct.company.com",
-      "frontend": { "type": "none", "ip": "origin-direct.company.com" }
+      "frontend": { "type": "none", "ip": "origin-direct.company.com" },
+      "data_classification": "public",
+      "sensitivity_horizon": "ephemeral"
     },
 
     {

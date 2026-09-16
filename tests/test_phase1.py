@@ -14,7 +14,8 @@ from pqcposture.evidence import (  # noqa: E402
     leaf_fingerprint,
 )
 from pqcposture.inventory import (  # noqa: E402
-    FrontendType, InventoryError, Service, TlsMode, load_inventory,
+    DataClassification, FrontendType, InventoryError, SensitivityHorizon,
+    Service, TlsMode, load_inventory,
 )
 from pqcposture.topology import Confidence, assess  # noqa: E402
 
@@ -322,3 +323,91 @@ def test_render_shows_inconsistency_banner():
     ]
     text = "\n".join(render_endpoint_evidence(ev))
     assert "INCONSISTENT" in text
+
+
+# -- declared context ------------------------------------------------------
+# Severity for findings like LEGACY_TLS and NO_PQ_KEX depends on what the
+# endpoint serves, which no probe can observe. It is declared, defaults to
+# unknown, and unknown stays unknown rather than being guessed.
+
+def test_context_defaults_to_unknown():
+    service = load_inventory({"service": "s", "vip": {"ip": "1.1.1.1"}})[0]
+    assert service.data_classification is DataClassification.UNKNOWN
+    assert service.sensitivity_horizon is SensitivityHorizon.UNKNOWN
+    assert service.context_declared is False
+
+
+def test_context_is_never_inferred_from_other_fields():
+    """A regulated-looking name must not imply a classification."""
+    service = load_inventory({
+        "service": "pci-payments.company.com",
+        "vip": {"ip": "1.1.1.1", "tls_mode": "terminate"},
+    })[0]
+    assert service.data_classification is DataClassification.UNKNOWN
+    assert service.sensitivity_horizon is SensitivityHorizon.UNKNOWN
+
+
+@pytest.mark.parametrize("value,expected", [
+    ("regulated", DataClassification.REGULATED),
+    ("PHIPA", DataClassification.REGULATED),
+    ("pci", DataClassification.REGULATED),
+    ("Protected B", DataClassification.REGULATED),
+    ("restricted", DataClassification.CONFIDENTIAL),
+    ("open", DataClassification.PUBLIC),
+])
+def test_classification_aliases(value, expected):
+    service = load_inventory(
+        {"service": "s", "vip": {"ip": "1.1.1.1"},
+         "data_classification": value})[0]
+    assert service.data_classification is expected
+
+
+@pytest.mark.parametrize("value,expected", [
+    ("long", SensitivityHorizon.LONG),
+    ("decades", SensitivityHorizon.LONG),
+    ("permanent", SensitivityHorizon.LONG),
+    ("session", SensitivityHorizon.EPHEMERAL),
+    ("short", SensitivityHorizon.SHORT),
+])
+def test_horizon_aliases(value, expected):
+    service = load_inventory(
+        {"service": "s", "vip": {"ip": "1.1.1.1"},
+         "sensitivity_horizon": value})[0]
+    assert service.sensitivity_horizon is expected
+
+
+def test_bad_classification_is_rejected_with_valid_options():
+    with pytest.raises(InventoryError, match="data_classification"):
+        load_inventory({"service": "s", "vip": {"ip": "1.1.1.1"},
+                        "data_classification": "quite sensitive"})
+
+
+def test_bad_horizon_is_rejected():
+    with pytest.raises(InventoryError, match="sensitivity_horizon"):
+        load_inventory({"service": "s", "vip": {"ip": "1.1.1.1"},
+                        "sensitivity_horizon": "a while"})
+
+
+def test_context_can_come_from_defaults_block():
+    services = load_inventory({
+        "defaults": {"data_classification": "internal"},
+        "services": [
+            {"service": "a", "vip": {"ip": "1.1.1.1"}},
+            {"service": "b", "vip": {"ip": "1.1.1.2"},
+             "data_classification": "regulated"},
+        ],
+    })
+    assert services[0].data_classification is DataClassification.INTERNAL
+    assert services[1].data_classification is DataClassification.REGULATED
+
+
+def test_horizon_is_independent_of_classification():
+    """Public data can be long-lived and regulated data ephemeral. The two
+    axes must not collapse into one."""
+    service = load_inventory({
+        "service": "s", "vip": {"ip": "1.1.1.1"},
+        "data_classification": "public",
+        "sensitivity_horizon": "long",
+    })[0]
+    assert service.data_classification is DataClassification.PUBLIC
+    assert service.sensitivity_horizon is SensitivityHorizon.LONG
