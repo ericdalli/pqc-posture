@@ -24,7 +24,10 @@ _VERSION_RE = re.compile(r"OpenSSL\s+(\d+)\.(\d+)\.(\d+)")
 # 3.2+ prints this line; it is the authoritative answer.
 _NEGOTIATED_RE = re.compile(r"^Negotiated TLS1\.3 group:\s*(\S+)", re.M)
 # Fallback for older clients and for -brief output.
-_TEMP_KEY_RE = re.compile(r"^Server Temp Key:\s*(.+?)\s*$", re.M)
+# 3.5 says "Peer Temp Key"; older releases say "Server Temp Key". Matching
+# only the old wording made the negotiated group come back unknown for any
+# server that omits the explicit "Negotiated TLS1.3 group" line.
+_TEMP_KEY_RE = re.compile(r"^(?:Peer|Server) Temp Key:\s*(.+?)\s*$", re.M)
 _CIPHER_RE = re.compile(r"^New,\s*(\S+),\s*Cipher is\s*(\S+)", re.M)
 _BRIEF_PROTO_RE = re.compile(r"^Protocol version:\s*(\S+)", re.M)
 _BRIEF_CIPHER_RE = re.compile(r"^Ciphersuite:\s*(\S+)", re.M)

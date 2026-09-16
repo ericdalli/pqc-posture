@@ -1,0 +1,70 @@
+Connecting to 140.82.113.4
+depth=2 C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication Root E46
+verify return:1
+depth=1 C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication CA DV E36
+verify return:1
+depth=0 CN=github.com
+verify return:1
+CONNECTED(00000003)
+---
+Certificate chain
+ 0 s:CN=github.com
+   i:C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication CA DV E36
+   a:PKEY: EC, (prime256v1); sigalg: ecdsa-with-SHA256
+   v:NotBefore: Sep  1 00:00:00 2026 GMT; NotAfter: Nov 29 23:59:59 2026 GMT
+ 1 s:C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication CA DV E36
+   i:C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication Root E46
+   a:PKEY: EC, (prime256v1); sigalg: ecdsa-with-SHA384
+   v:NotBefore: Mar 22 00:00:00 2021 GMT; NotAfter: Mar 21 23:59:59 2036 GMT
+ 2 s:C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication Root E46
+   i:C=US, ST=New Jersey, L=Jersey City, O=The USERTRUST Network, CN=USERTrust ECC Certification Authority
+   a:PKEY: EC, (secp384r1); sigalg: ecdsa-with-SHA384
+   v:NotBefore: Mar 22 00:00:00 2021 GMT; NotAfter: Jan 18 23:59:59 2038 GMT
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIID7TCCA5SgAwIBAgIRAKWevbWWdR239cCVB5YTlTwwCgYIKoZIzj0EAwIwYDEL
+MAkGA1UEBhMCR0IxGDAWBgNVBAoTD1NlY3RpZ28gTGltaXRlZDE3MDUGA1UEAxMu
+U2VjdGlnbyBQdWJsaWMgU2VydmVyIEF1dGhlbnRpY2F0aW9uIENBIERWIEUzNjAe
+Fw0yNjA5MDEwMDAwMDBaFw0yNjExMjkyMzU5NTlaMBUxEzARBgNVBAMTCmdpdGh1
+Yi5jb20wWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASFNhs0vLNR9yDpqprL6Cct
+YNExex040djH16D6WrHxLyjnmVFGYSI4sj6wK3V17ADiaabPE04vQk76djW0DT8q
+o4ICeDCCAnQwHwYDVR0jBBgwFoAUF5moBMFv5C1wqAoQPQPT6Rq4JmMwHQYDVR0O
+BBYEFGaY7EwRNfdLUISLqBw2ZdAXVtTgMA4GA1UdDwEB/wQEAwIHgDAMBgNVHRMB
+Af8EAjAAMBMGA1UdJQQMMAoGCCsGAQUFBwMBMEkGA1UdIARCMEAwNAYLKwYBBAGy
+MQECAgcwJTAjBggrBgEFBQcCARYXaHR0cHM6Ly9zZWN0aWdvLmNvbS9DUFMwCAYG
+Z4EMAQIBMIGEBggrBgEFBQcBAQR4MHYwTwYIKwYBBQUHMAKGQ2h0dHA6Ly9jcnQu
+c2VjdGlnby5jb20vU2VjdGlnb1B1YmxpY1NlcnZlckF1dGhlbnRpY2F0aW9uQ0FE
+VkUzNi5jcnQwIwYIKwYBBQUHMAGGF2h0dHA6Ly9vY3NwLnNlY3RpZ28uY29tMIIB
+BAYKKwYBBAHWeQIEAgSB9QSB8gDwAHYA1219ENGn9XfCx+lf1wC/+YLJM1pl4dCz
+AXMXwMjFaXcAAAGgWk2g0QAABAMARzBFAiB6u6CCyQsap+pmTuz7Ab9THPLWVtQR
+PTqSNuC8ZWO6eQIhALM3rJpdu0XVcvSW2985RjODh+9BBR5n8fB5lL7LOXnmAHYA
+yKPEf8ezrbk1awE/anoSbeM6TkOlxkb5l605dZkdz5oAAAGgWk2grQAABAMARzBF
+AiBwsQvwfVSuEcGqKp4lN/jWPUUuudUX+St4fImVDxCKmQIhANHJvWdzsXH/A9uC
+rSz1sQ4k3yowTYxtVtfTJc91oze2MCUGA1UdEQQeMByCCmdpdGh1Yi5jb22CDnd3
+dy5naXRodWIuY29tMAoGCCqGSM49BAMCA0cAMEQCIBdBV7Y/5t2o988vMBDGLJEl
+LWALzPJkt3dphmsZk9CEAiAJqxa/1c8JYYWHsGy1rQNUb3ffuCJU7pnjjqJfdiim
+hQ==
+-----END CERTIFICATE-----
+subject=CN=github.com
+issuer=C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication CA DV E36
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: ecdsa_secp256r1_sha256
+Peer Temp Key: X25519, 253 bits
+---
+SSL handshake has read 3087 bytes and written 1616 bytes
+Verification: OK
+---
+New, TLSv1.3, Cipher is TLS_AES_128_GCM_SHA256
+Protocol: TLSv1.3
+Server public key is 256 bit
+This TLS version forbids renegotiation.
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---
+DONE
