@@ -57,6 +57,8 @@ class ServiceResult:
     sni: str | None = None
     declared_frontend_type: str = "unknown"
     declared_tls_mode: str = "unknown"
+    data_classification: str = "unknown"
+    sensitivity_horizon: str = "unknown"
     frontend: EndpointEvidence | None = None
     backends: list[EndpointEvidence] = field(default_factory=list)
     topology: TopologyAssessment = field(default_factory=TopologyAssessment)
@@ -150,6 +152,8 @@ class ServiceScanner:
                                     if service.frontend else "none"),
             declared_tls_mode=(service.frontend.declared_tls_mode.value
                                if service.frontend else "unknown"),
+            data_classification=service.data_classification.value,
+            sensitivity_horizon=service.sensitivity_horizon.value,
         )
 
         if service.frontend:

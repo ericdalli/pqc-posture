@@ -330,6 +330,45 @@ pqc-posture -i inventory.json --repeat 10 --json evidence.json
 Phase 1 exits 0 regardless of what it finds. Deciding what is acceptable is
 Phase 4's job.
 
+## Declared context: classification and horizon
+
+Two optional service-level fields. Neither affects any probe — they are
+context for interpreting findings, and both default to `unknown`.
+
+```json
+{
+  "service": "claims.company.com",
+  "vip": { "ip": "10.1.1.3", "tls_mode": "reencrypt" },
+  "data_classification": "regulated",
+  "sensitivity_horizon": "long"
+}
+```
+
+`data_classification` — who may see it: `public`, `internal`, `confidential`,
+`regulated`, `unknown`. Aliases accepted: `open`, `restricted`, `pci`,
+`phipa`, `hipaa`, `protected-b`, `classified`.
+
+`sensitivity_horizon` — how long it stays sensitive: `ephemeral` (weeks),
+`short` (1–2 years), `medium` (5–10), `long` (decades), `unknown`. Aliases:
+`session`, `transient`, `operational`, `decades`, `permanent`.
+
+**Why two axes rather than one.** Confidentiality level answers "how bad is a
+leak today". Horizon answers "how long does a leak stay bad", and that is the
+question harvest-now-decrypt-later actually turns on. Traffic captured today
+is decryptable once a cryptographically relevant quantum computer exists, so
+exposure is a function of how long the contents remain worth reading. A
+session token is worthless in a week whatever its classification; a health
+record or a classified file is still sensitive in 2050, and classical-only key
+exchange on that endpoint is a concrete liability rather than a theoretical
+one. The axes are independent and the parser keeps them so — public data can
+be long-lived, regulated data can be ephemeral.
+
+**Unknown is a real answer.** Nothing infers classification from a hostname, a
+port, or a TLS mode, and there is a test pinning that. An undeclared service
+is reported as undeclared rather than defaulted to a guessed severity — the
+same discipline `not_observed` applies to probe evidence. Severity derivation
+from these fields is Phase 4; Phase 1 only records what was declared.
+
 ## Chained frontends
 
 Front Door → App Gateway → App Service is one path with two terminating hops,
