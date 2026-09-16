@@ -16,17 +16,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-pip \
         python3-venv \
         git \
+        shellcheck \
         curl \
         less \
         dnsutils \
         iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Fail the image build early if the base ever moves off 3.5.
+# Fail the image build early if the base ever moves off 3.5..
 RUN openssl version | grep -qE 'OpenSSL 3\.(5|[6-9]|[1-9][0-9])' \
     || (echo "FATAL: base image OpenSSL is $(openssl version), need 3.5+" && exit 1)
 
 ARG USERNAME=vscode
-RUN useradd -m -s /bin/bash ${USERNAME}
+RUN useradd -m -s /bin/bash ${USERNAME} \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends sudo \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME} \
+    && rm -rf /var/lib/apt/lists/*
 USER ${USERNAME}
 WORKDIR /workspaces/pqc-posture
