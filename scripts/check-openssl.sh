@@ -29,7 +29,30 @@ MSG
   exit 1
 fi
 
+TLS_GROUPS="$("$BIN" list -tls-groups 2>/dev/null | tr ':' '\n' | sed 's/^[[:space:]]*//')"
+
+# 3.5 prints every group on ONE colon-separated line, so grepping the raw
+# output matches the whole line and reports classical groups as hybrid.
+# Split on colons first.
+#
+# TLS_GROUPS, not GROUPS: GROUPS is a read-only bash builtin holding your Unix
+# group IDs. Assigning to it fails SILENTLY -- no error, even under set -u --
+# and the variable keeps its original numeric value.
+HYBRID="$(printf '%s\n' "$TLS_GROUPS" | grep -iE 'MLKEM' | grep -ivE '^MLKEM')"
+PURE="$(printf '%s\n' "$TLS_GROUPS" | grep -iE '^MLKEM')"
+
 echo
-echo "hybrid groups this client can offer:"
-"$BIN" list -tls-groups 2>/dev/null | grep -iE 'mlkem' | sed 's/^/  /' || \
-  echo "  (none found -- check the provider configuration)"
+echo "hybrid groups (classical + ML-KEM) this client can offer:"
+if [[ -n "$HYBRID" ]]; then
+  printf '%s\n' "$HYBRID" | sed 's/^/  /'
+else
+  echo "  (none -- this client cannot measure post-quantum key exchange)"
+fi
+
+echo
+echo "pure ML-KEM groups (no classical hedge, rarely deployed):"
+if [[ -n "$PURE" ]]; then
+  printf '%s\n' "$PURE" | sed 's/^/  /'
+else
+  echo "  (none)"
+fi
