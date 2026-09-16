@@ -311,3 +311,23 @@ def test_rsa_certificate_chain_still_parses():
     assert fields["key_algorithm"] == "rsaEncryption"
     assert fields["key_bits"] == 2048
     assert "key_curve" not in fields
+
+
+@pytest.mark.parametrize("line,expected", [
+    ("Peer Temp Key: X25519, 253 bits", "X25519"),
+    ("Server Temp Key: X25519, 253 bits", "X25519"),
+    ("Peer Temp Key: X25519MLKEM768, 192 bits", "X25519MLKEM768"),
+    ("Peer Temp Key: ECDH, P-256, 256 bits", "P-256"),
+])
+def test_temp_key_wording_variants(line, expected):
+    """OpenSSL 3.5 says "Peer Temp Key"; older releases say "Server Temp Key".
+    Matching only the old wording returned an unknown negotiated group for any
+    server omitting the explicit "Negotiated TLS1.3 group" line -- github.com
+    among them."""
+    assert ossl.parse_negotiated_group(line + "\n") == expected
+
+
+def test_github_fixture_reports_its_group():
+    text = (FIXTURES / "peer_temp_key_github.txt").read_text()
+    assert "Negotiated TLS1.3 group" not in text
+    assert ossl.parse_negotiated_group(text) == "X25519"

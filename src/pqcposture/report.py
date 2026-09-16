@@ -61,10 +61,16 @@ def render_target(result: TargetResult, verbose: bool = False) -> str:
     if cert.subject:
         expiry = (f", {cert.days_remaining}d left"
                   if cert.days_remaining is not None else "")
+        # key and sigalg are independent: sigalg is what the ISSUER used to
+        # sign this certificate, not the algorithm of the certificate's own
+        # key. An RSA CA signing an EC leaf is normal and common, so the two
+        # are labelled rather than run together behind a comma.
         lines.append(
-            f"  certificate      : {cert.key_algorithm or '?'} "
-            f"{cert.key_bits or '?'}-bit, {cert.signature_algorithm or '?'}"
-            f"{expiry}")
+            f"  cert key         : {cert.key_algorithm or '?'} "
+            f"{cert.key_bits or '?'}-bit{expiry}")
+        lines.append(
+            f"  cert signed with : {cert.signature_algorithm or '?'} "
+            f"(by the issuer)")
 
     if result.findings:
         lines.append("  findings:")
