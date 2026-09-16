@@ -290,3 +290,24 @@ def test_generic_temp_key_reports_curve_not_algorithm_family():
 def test_named_temp_key_reports_the_group():
     text = "Server Temp Key: X25519MLKEM768, 192 bits\n"
     assert ossl.parse_negotiated_group(text) == "X25519MLKEM768"
+
+
+def test_ec_certificate_chain_parses():
+    """EC keys print a curve name where RSA prints a bit count. Requiring
+    digits silently dropped the whole certificate block for every ECDSA
+    endpoint — which is most of the modern web."""
+    fields = ossl.parse_chain((FIXTURES / "ec_cloudflare.txt").read_text())
+    assert fields["key_algorithm"] == "EC"
+    assert fields["key_curve"] == "prime256v1"
+    assert fields["key_bits"] == 256
+    assert fields["signature_algorithm"] == "ecdsa-with-SHA256"
+    assert fields["subject"] == "CN=cloudflare.com"
+    assert fields["chain_length"] == 3
+
+
+def test_rsa_certificate_chain_still_parses():
+    """Guard the other branch of the same regex."""
+    fields = ossl.parse_chain((FIXTURES / "hybrid_success.txt").read_text())
+    assert fields["key_algorithm"] == "rsaEncryption"
+    assert fields["key_bits"] == 2048
+    assert "key_curve" not in fields

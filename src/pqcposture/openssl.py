@@ -36,8 +36,23 @@ _HRR_RE = re.compile(r"hello_retry_request|HelloRetryRequest", re.I)
 
 # Chain summary lines emitted by s_client, e.g.
 #   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+# Two shapes, both real:
+#   PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+#   PKEY: EC, (prime256v1); sigalg: ecdsa-with-SHA256
+# EC keys report a curve name where RSA reports a bit count, so the size
+# group has to be optional. Requiring digits silently dropped the entire
+# certificate block for every ECDSA endpoint.
 _CHAIN_PKEY_RE = re.compile(
-    r"^\s*a:PKEY:\s*([^,]+),\s*(\d+)\s*\(bit\);\s*sigalg:\s*(\S+)", re.M)
+    r"^\s*a:PKEY:\s*([^,]+),\s*(?:(\d+)\s*\(bit\)|\(([^)]+)\))\s*;\s*"
+    r"sigalg:\s*(\S+)", re.M)
+
+# Curve name -> key size, so EC certificates get a comparable strength figure.
+_CURVE_BITS = {
+    "prime256v1": 256, "secp256r1": 256, "P-256": 256,
+    "secp384r1": 384, "P-384": 384,
+    "secp521r1": 521, "P-521": 521,
+    "prime192v1": 192, "secp224r1": 224,
+}
 _CHAIN_VALIDITY_RE = re.compile(
     r"^\s*v:NotBefore:\s*(.+?);\s*NotAfter:\s*(.+?)\s*$", re.M)
 _CHAIN_ENTRY_RE = re.compile(r"^\s*(\d+)\s+s:(.*)$", re.M)
@@ -373,8 +388,14 @@ def parse_chain(text: str) -> dict:
         pkey = _CHAIN_PKEY_RE.search(block)
         if pkey:
             out["key_algorithm"] = pkey.group(1).strip()
-            out["key_bits"] = int(pkey.group(2))
-            out["signature_algorithm"] = pkey.group(3).strip()
+            if pkey.group(2):                      # RSA: explicit bit count
+                out["key_bits"] = int(pkey.group(2))
+            elif pkey.group(3):                    # EC: named curve
+                curve = pkey.group(3).strip()
+                out["key_curve"] = curve
+                if curve in _CURVE_BITS:
+                    out["key_bits"] = _CURVE_BITS[curve]
+            out["signature_algorithm"] = pkey.group(4).strip()
         validity = _CHAIN_VALIDITY_RE.search(block)
         if validity:
             out["not_before"] = validity.group(1).strip()
