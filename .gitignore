@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# Real scan inputs and outputs must never reach a public repository.
+# An inventory file contains internal VIPs, backend IPs and hostnames.
+# An evidence file contains those plus certificate subjects and issuers.
+# Both are a free internal network map for anyone reading your GitHub.
+# Only *.example.json is tracked.
+# ---------------------------------------------------------------------------
+inventory*.json
+!inventory.example.json
+targets*.txt
+!targets.example.txt
+evidence*.json
+report*.json
+scan-*.json
+*.evidence.json
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+
+# Editors / OS
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
