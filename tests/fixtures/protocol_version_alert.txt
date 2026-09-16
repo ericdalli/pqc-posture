@@ -1,0 +1,7 @@
+CONNECTED(00000003)
+40B2E1A8C47F0000:error:0A000102:SSL routines:ssl_choose_client_version:unsupported protocol:../ssl/statem/statem_lib.c:1989:
+---
+no peer certificate available
+---
+SSL handshake has read 7 bytes and written 241 bytes
+---

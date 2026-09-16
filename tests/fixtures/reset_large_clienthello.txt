@@ -1,0 +1,10 @@
+CONNECTED(00000003)
+write:errno=104
+40F2C1A8B47F0000:error:8000006B:system library:BIO_read:Connection reset by peer:../crypto/bio/bss_sock.c:131:
+---
+no peer certificate available
+---
+SSL handshake has read 0 bytes and written 1547 bytes
+---
+New, (NONE), Cipher is (NONE)
+---

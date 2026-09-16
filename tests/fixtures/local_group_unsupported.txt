@@ -1,0 +1,2 @@
+Call to SSL_CONF_cmd(-groups, X25519MLKEM768) failed
+40A2C1B8947F0000:error:0A0000BF:SSL routines:SSL_CTX_set1_groups_list:no suitable groups:../ssl/t1_lib.c:1234:

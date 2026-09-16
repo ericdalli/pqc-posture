@@ -1,0 +1,22 @@
+CONNECTED(00000003)
+---
+Certificate chain
+ 0 s:CN = legacy.example.com
+   i:C = US, O = Example Issuing, CN = Example Issuing CA R3
+   a:PKEY: id-ecPublicKey, 256 (bit); sigalg: ecdsa-with-SHA256
+   v:NotBefore: Sep  1 00:00:00 2026 GMT; NotAfter: Sep 15 23:59:59 2026 GMT
+---
+Server certificate
+subject=CN = legacy.example.com
+issuer=C = US, O = Example Issuing, CN = Example Issuing CA R3
+---
+Peer signature type: ECDSA
+Negotiated TLS1.3 group: X25519
+---
+SSL handshake has read 3220 bytes and written 324 bytes
+Verification error: unable to get local issuer certificate
+---
+New, TLSv1.3, Cipher is TLS_AES_128_GCM_SHA256
+Verify return code: 20 (unable to get local issuer certificate)
+---
+DONE

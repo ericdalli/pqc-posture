@@ -1,0 +1,9 @@
+# One target per line: host, host:port, or host:port@sni
+# The Azure measurement lab from Phase 2 goes here.
+
+cloudflare.com:443            # known-good hybrid reference point
+www.google.com:443            # known-good hybrid reference point
+
+# pqc-lab.azurewebsites.net:443
+# pqc-lab-fd.azurefd.net:443
+# 20.0.0.10:443@pqc-lab.example.com     # AppGw by IP, SNI forced
