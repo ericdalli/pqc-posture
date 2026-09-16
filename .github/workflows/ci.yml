@@ -31,6 +31,11 @@ jobs:
       - name: Lint
         run: ruff check src/ tests/
         continue-on-error: true
+      - name: Shellcheck
+        # Catches the class of bug that cost an afternoon: assigning to GROUPS,
+        # a read-only bash builtin, fails silently with no error even under
+        # set -u. Shellcheck flags it as SC2178 before the script ever runs.
+        run: shellcheck scripts/*.sh
 
       - name: Verify the example inventory still parses
         run: |
