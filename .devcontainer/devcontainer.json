@@ -1,0 +1,21 @@
+{
+  "name": "pqc-posture (OpenSSL 3.5)",
+  "build": { "dockerfile": "Dockerfile" },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["tests"]
+      }
+    }
+  },
+  "postCreateCommand": "pip install --break-system-packages -e '.[dev]' && openssl version && openssl list -tls-groups | head -20",
+  "remoteUser": "vscode"
+}

@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record the runner's OpenSSL
+        # Informational only. The test suite is fixture-driven and needs no
+        # network and no OpenSSL 3.5 -- that was a deliberate design choice, so
+        # CI stays green on runners that still ship 3.0.
+        run: openssl version -a
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Test
+        run: pytest tests/ -q
+
+      - name: Lint
+        run: ruff check src/ tests/
+        continue-on-error: true
+
+      - name: Verify the example inventory still parses
+        run: |
+          python -c "
+          from pqcposture.inventory import load_inventory_file
+          services = load_inventory_file('inventory.example.json')
+          print(f'{len(services)} services parsed')
+          assert len(services) >= 5
+          "
