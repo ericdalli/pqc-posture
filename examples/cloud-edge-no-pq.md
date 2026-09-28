@@ -1,4 +1,4 @@
-'''
+```
 pqc-posture [TEST URL]:443 -v
 [TEST URL]:443: D (45/100)
 pqc-posture 0.1.0
@@ -35,4 +35,4 @@ hybrid groups offerable by this client: X25519MLKEM768, SecP256r1MLKEM768, SecP3
       ffdhe3072                rejected. peer sent TLS alert: handshake_failure
 
 summary: 0/1 negotiate hybrid KEX by default; 0/1 support it at all
-'''
+```
