@@ -444,3 +444,7 @@ automatically.
 The test suite is fixture-driven: no network, no OpenSSL 3.5 required. That was
 a deliberate design choice, and it is why CI stays green on GitHub-hosted
 runners that still ship OpenSSL 3.0.
+
+## Development
+
+Built with AI assistance; design, testing and validation by me.
